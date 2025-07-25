@@ -49,6 +49,16 @@ class Database {
                 completed BOOLEAN DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )`);
+
+            // Auth sessions table
+            this.db.run(`CREATE TABLE IF NOT EXISTS auth_sessions (
+                session_id TEXT PRIMARY KEY,
+                k1 TEXT UNIQUE,
+                pubkey TEXT,
+                authenticated BOOLEAN DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                expires_at DATETIME
+            )`);
         });
     }
 
@@ -189,6 +199,45 @@ class Database {
 
     async getAllChannelRequests() {
         return this.all('SELECT * FROM channel_requests ORDER BY created_at DESC');
+    }
+
+    // Auth session operations
+    async createAuthSession(sessionId, k1, expiresAt) {
+        return this.run(
+            'INSERT INTO auth_sessions (session_id, k1, expires_at) VALUES (?, ?, ?)',
+            [sessionId, k1, expiresAt]
+        );
+    }
+
+    async getAuthSession(k1) {
+        return this.get(
+            'SELECT * FROM auth_sessions WHERE k1 = ? AND authenticated = 0 AND expires_at > datetime("now")',
+            [k1]
+        );
+    }
+
+    async authenticateSession(k1, pubkey) {
+        return this.run(
+            'UPDATE auth_sessions SET authenticated = 1, pubkey = ? WHERE k1 = ?',
+            [pubkey, k1]
+        );
+    }
+
+    async cleanupExpiredAuthSessions() {
+        return this.run(
+            'DELETE FROM auth_sessions WHERE expires_at <= datetime("now")'
+        );
+    }
+
+    async getAllAuthSessions() {
+        return this.all('SELECT * FROM auth_sessions ORDER BY created_at DESC');
+    }
+
+    async getAuthenticatedSession(sessionId) {
+        return this.get(
+            'SELECT * FROM auth_sessions WHERE session_id = ? AND authenticated = 1 AND expires_at > datetime("now")',
+            [sessionId]
+        );
     }
 
     close() {

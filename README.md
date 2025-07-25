@@ -152,6 +152,14 @@ docker-compose logs -f bitcoind
 - paste lnurl into app and complete the flow
 - mine blocks: `./bitcoin-cli mine 6`
 
+#### LNURL Auth
+- checkout [bitkit-docker](https://github.com/ovitrif/bitkit-docker) repo
+- set DOMAIN in `docker-compose.yml` to `http://__YOUR_NETWORK_IP__:3000`
+- run `docker compose down`
+- run `docker compose up --build`
+- generate LNURL auth: `http://localhost:3000/generate/auth`
+- paste lnurl into app and complete the flow
+
 ## Configuration
 
 ### Environment Variables

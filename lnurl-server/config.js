@@ -35,7 +35,9 @@ const config = {
         commentAllowed: 255, // Max comment length
         k1Length: 32, // k1 random bytes length
         idLength: 16, // ID random bytes length
-        defaultChannelAmount: 100000 // 100,000 sats default channel size
+        defaultChannelAmount: 100000, // 100,000 sats default channel size
+        sessionTimeout: 600, // 10 minutes in seconds
+        cleanupInterval: 300 // 5 minutes in seconds
     },
 
     // Background job intervals

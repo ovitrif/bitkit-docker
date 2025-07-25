@@ -64,8 +64,55 @@ router.get('/:type', asyncHandler(async (req, res) => {
             qrCode,
             type: 'channel'
         });
+    } else if (type === 'auth') {
+        // Generate k1 and session
+        const k1 = Validation.generateK1();
+        const sessionId = Validation.generateId();
+        
+        // Add action parameter if specified
+        const action = req.query.action;
+        if (action) {
+            const validActions = ['register', 'login', 'link', 'auth'];
+            if (!validActions.includes(action)) {
+                throw new ValidationError(`Invalid action. Must be one of: ${validActions.join(', ')}`);
+            }
+        }
+        
+        // Calculate expiration time
+        const expiresAt = new Date();
+        expiresAt.setSeconds(expiresAt.getSeconds() + config.limits.sessionTimeout);
+
+        // Store auth session in db
+        await db.createAuthSession(sessionId, k1, expiresAt.toISOString());
+
+        // Build auth URL
+        let authUrl = `${config.domain}/auth?tag=login&k1=${k1}`;
+        if (action) {
+            authUrl += `&action=${action}`;
+        }
+        
+        lnurl = encode(authUrl);
+        qrCode = await QRCode.toDataURL(lnurl);
+
+        const logData = { authUrl, k1, sessionId };
+        const responseData = {
+            url: authUrl,
+            lnurl,
+            qrCode,
+            type: 'auth',
+            k1: k1,
+            sessionId: sessionId
+        };
+
+        if (action) {
+            logData.action = action;
+            responseData.action = action;
+        }
+
+        Logger.info('Auth LNURL generated', logData);
+        res.json(responseData);
     } else {
-        throw new ValidationError('Invalid type. Use "withdraw", "pay", or "channel"');
+        throw new ValidationError('Invalid type. Use "withdraw", "pay", "channel", or "auth"');
     }
 }));
 

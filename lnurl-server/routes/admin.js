@@ -11,6 +11,7 @@ const { asyncHandler } = require('../middleware/errorHandler');
 // Health check endpoint
 router.get('/health', asyncHandler(async (req, res) => {
     const connections = await checkConnections();
+    const sessions = await getSessions();
 
     res.json({
         status: connections.bitcoin && connections.lnd ? 'healthy' : 'unhealthy',
@@ -19,6 +20,7 @@ router.get('/health', asyncHandler(async (req, res) => {
         lnd_connected: connections.lnd,
         block_height: connections.blockHeight,
         lnd_info: connections.nodeInfo,
+        auth_sessions: sessions,
         domain: config.domain
     });
 }));
@@ -139,6 +141,24 @@ router.get('/address', asyncHandler(async (req, res) => {
     res.json(addressInfo);
 }));
 
+
+// List all auth sessions endpoint (renamed from auth-sessions to sessions)
+router.get('/sessions', asyncHandler(async (req, res) => {
+    const authSessions = await db.getAllAuthSessions();
+
+    res.json({
+        auth_sessions: authSessions.map(as => ({
+            session_id: as.session_id,
+            k1: as.k1,
+            pubkey: as.pubkey,
+            authenticated: Boolean(as.authenticated),
+            created_at: as.created_at,
+            expires_at: as.expires_at
+        }))
+    });
+}));
+
+
 // Helper function to check connections
 async function checkConnections() {
     const result = { bitcoin: false, lnd: false, error: null, blockHeight: null, nodeInfo: null };
@@ -170,6 +190,30 @@ async function checkConnections() {
     }
 
     return result;
+}
+
+// Helper to get auth sessions
+async function getSessions() {
+    try {
+        const allSessions = await db.getAllAuthSessions();
+        const now = new Date().toISOString();
+        
+        const activeSessions = allSessions.filter(s => s.expires_at > now);
+        const authenticatedSessions = allSessions.filter(s => s.authenticated && s.expires_at > now);
+        
+        return {
+            total_sessions: allSessions.length,
+            active_sessions: activeSessions.length,
+            authenticated_sessions: authenticatedSessions.length
+        };
+    } catch (error) {
+        Logger.error('Error getting auth stats', error);
+        return {
+            total_sessions: 0,
+            active_sessions: 0,
+            authenticated_sessions: 0
+        };
+    }
 }
 
 module.exports = router; 

@@ -6,11 +6,13 @@ const config = require('../config');
 class BackgroundJobs {
     constructor() {
         this.paymentCheckInterval = null;
+        this.sessionCleanupInterval = null;
     }
 
     // Start all background jobs
     start() {
         this.startPaymentCheck();
+        this.startAuthSessionCleanup();
         Logger.info('Background jobs started');
     }
 
@@ -19,6 +21,10 @@ class BackgroundJobs {
         if (this.paymentCheckInterval) {
             clearInterval(this.paymentCheckInterval);
             this.paymentCheckInterval = null;
+        }
+        if (this.sessionCleanupInterval) {
+            clearInterval(this.sessionCleanupInterval);
+            this.sessionCleanupInterval = null;
         }
         Logger.info('Background jobs stopped');
     }
@@ -55,6 +61,28 @@ class BackgroundJobs {
             }
         } catch (error) {
             Logger.error('Error in checkSettledInvoices', error);
+        }
+    }
+
+    // Start auth session cleanup job
+    startAuthSessionCleanup() {
+        this.sessionCleanupInterval = setInterval(async () => {
+            try {
+                await this.cleanupExpiredAuthSessions();
+            } catch (error) {
+                Logger.error('Auth session cleanup error', error);
+            }
+        }, config.limits.cleanupInterval * 1000); // Convert to milliseconds
+    }
+    
+    async cleanupExpiredAuthSessions() {
+        try {
+            const result = await db.cleanupExpiredAuthSessions();
+            if (result.changes > 0) {
+                Logger.info('Cleaned up expired auth sessions', { count: result.changes });
+            }
+        } catch (error) {
+            Logger.error('Error cleaning up auth sessions', error);
         }
     }
 }

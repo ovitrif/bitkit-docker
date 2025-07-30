@@ -3,7 +3,8 @@ const config = require('../config');
 class Logger {
     static info(message, data = {}) {
         const timestamp = new Date().toISOString();
-        console.log(`[${timestamp}] INFO: ${message}`, Object.keys(data).length > 0 ? data : '');
+        const output = Object.keys(data).length > 0 ? `\n${JSON.stringify(data, null, 2)}` : '';
+        console.log(`[${timestamp}] INFO: ${message}${output}`);
     }
 
     static error(message, error = null) {
@@ -16,13 +17,15 @@ class Logger {
 
     static warn(message, data = {}) {
         const timestamp = new Date().toISOString();
-        console.warn(`[${timestamp}] WARN: ${message}`, Object.keys(data).length > 0 ? data : '');
+        const output = Object.keys(data).length > 0 ? `\n${JSON.stringify(data, null, 2)}` : '';
+        console.warn(`[${timestamp}] WARN: ${message}${output}`);
     }
 
     static debug(message, data = {}) {
         if (config.nodeEnv === 'development') {
             const timestamp = new Date().toISOString();
-            console.log(`[${timestamp}] DEBUG: ${message}`, Object.keys(data).length > 0 ? data : '');
+            const output = Object.keys(data).length > 0 ? `\n${JSON.stringify(data, null, 2)}` : '';
+            console.log(`[${timestamp}] DEBUG: ${message}${output}`);
         }
     }
 

@@ -5,6 +5,7 @@ const cors = require('cors');
 const config = require('./config');
 const Logger = require('./utils/logger');
 const { errorHandler } = require('./middleware/errorHandler');
+const httpLogger = require('./middleware/httpLogger');
 const backgroundJobs = require('./services/backgroundJobs');
 
 // Import route modules
@@ -22,15 +23,7 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// Request logging middleware
-app.use((req, res, next) => {
-  Logger.api(req.path, req.method, 'request', {
-    ip: req.ip,
-    userAgent: req.get('User-Agent')
-  });
-  next();
-});
+app.use(httpLogger); // Request logging middleware (must stay before routes)
 
 // Routes
 app.use('/withdraw', withdrawRoutes);

@@ -67,12 +67,10 @@ class BackgroundJobs {
     // Start auth session cleanup job
     startAuthSessionCleanup() {
         this.sessionCleanupInterval = setInterval(async () => {
-            try {
-                await this.cleanupExpiredAuthSessions();
-            } catch (error) {
-                Logger.error('Auth session cleanup error', error);
-            }
-        }, config.limits.cleanupInterval * 1000); // Convert to milliseconds
+            await this.cleanupExpiredAuthSessions();
+        }, config.intervals.authSessionCleanup);
+
+        Logger.info('Auth session cleanup job started', { interval: config.intervals.authSessionCleanup });
     }
     
     async cleanupExpiredAuthSessions() {

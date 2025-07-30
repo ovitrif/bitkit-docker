@@ -37,12 +37,12 @@ const config = {
         idLength: 16, // ID random bytes length
         defaultChannelAmount: 100000, // 100,000 sats default channel size
         sessionTimeout: 600, // 10 minutes in seconds
-        cleanupInterval: 300 // 5 minutes in seconds
     },
 
     // Background job intervals
     intervals: {
-        paymentCheck: 10000 // 10 seconds
+        paymentCheck: 10000, // 10 seconds
+        authSessionCleanup: 300 * 1000 // 5 minutes
     }
 };
 

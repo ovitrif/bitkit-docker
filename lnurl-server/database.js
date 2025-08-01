@@ -52,7 +52,7 @@ class Database {
 
             // Auth sessions table
             this.db.run(`CREATE TABLE IF NOT EXISTS auth_sessions (
-                session_id TEXT PRIMARY KEY,
+                id TEXT PRIMARY KEY,
                 k1 TEXT UNIQUE,
                 pubkey TEXT,
                 authenticated BOOLEAN DEFAULT 0,
@@ -202,10 +202,10 @@ class Database {
     }
 
     // Auth session operations
-    async createAuthSession(sessionId, k1, expiresAt) {
+    async createAuthSession(id, k1, expiresAt) {
         return this.run(
-            'INSERT INTO auth_sessions (session_id, k1, expires_at) VALUES (?, ?, ?)',
-            [sessionId, k1, expiresAt]
+            'INSERT INTO auth_sessions (id, k1, expires_at) VALUES (?, ?, ?)',
+            [id, k1, expiresAt]
         );
     }
 
@@ -231,13 +231,6 @@ class Database {
 
     async getAllAuthSessions() {
         return this.all('SELECT * FROM auth_sessions ORDER BY created_at DESC');
-    }
-
-    async getAuthenticatedSession(sessionId) {
-        return this.get(
-            'SELECT * FROM auth_sessions WHERE session_id = ? AND authenticated = 1 AND expires_at > datetime("now")',
-            [sessionId]
-        );
     }
 
     close() {

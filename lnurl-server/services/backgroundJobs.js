@@ -6,13 +6,13 @@ const config = require('../config');
 class BackgroundJobs {
     constructor() {
         this.paymentCheckInterval = null;
-        this.sessionCleanupInterval = null;
+        this.authCleanupInterval = null;
     }
 
     // Start all background jobs
     start() {
         this.startPaymentCheck();
-        this.startAuthSessionCleanup();
+        this.startAuthCleanup();
         Logger.info('Background jobs started');
     }
 
@@ -22,9 +22,9 @@ class BackgroundJobs {
             clearInterval(this.paymentCheckInterval);
             this.paymentCheckInterval = null;
         }
-        if (this.sessionCleanupInterval) {
-            clearInterval(this.sessionCleanupInterval);
-            this.sessionCleanupInterval = null;
+        if (this.authCleanupInterval) {
+            clearInterval(this.authCleanupInterval);
+            this.authCleanupInterval = null;
         }
         Logger.info('Background jobs stopped');
     }
@@ -65,15 +65,15 @@ class BackgroundJobs {
     }
 
     // Start auth session cleanup job
-    startAuthSessionCleanup() {
-        this.sessionCleanupInterval = setInterval(async () => {
-            await this.cleanupExpiredAuthSessions();
+    startAuthCleanup() {
+        this.authCleanupInterval = setInterval(async () => {
+            await this.cleanupExpiredAuth();
         }, config.intervals.authSessionCleanup);
 
         Logger.info('Auth session cleanup job started', { interval: config.intervals.authSessionCleanup });
     }
     
-    async cleanupExpiredAuthSessions() {
+    async cleanupExpiredAuth() {
         try {
             const result = await db.cleanupExpiredAuthSessions();
             if (result.changes > 0) {

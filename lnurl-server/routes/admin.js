@@ -142,18 +142,18 @@ router.get('/address', asyncHandler(async (req, res) => {
 }));
 
 
-// List all auth sessions endpoint (renamed from auth-sessions to sessions)
+// List all auth sessions endpoint
 router.get('/sessions', asyncHandler(async (req, res) => {
-    const authSessions = await db.getAllAuthSessions();
+    const sessions = await db.getAllAuthSessions();
 
     res.json({
-        auth_sessions: authSessions.map(as => ({
-            session_id: as.session_id,
-            k1: as.k1,
-            pubkey: as.pubkey,
-            authenticated: Boolean(as.authenticated),
-            created_at: as.created_at,
-            expires_at: as.expires_at
+        sessions: sessions.map(s => ({
+            id: s.id,
+            k1: s.k1,
+            pubkey: s.pubkey,
+            authenticated: Boolean(s.authenticated),
+            created_at: s.created_at,
+            expires_at: s.expires_at
         }))
     });
 }));

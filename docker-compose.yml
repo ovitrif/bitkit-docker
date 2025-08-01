@@ -148,8 +148,13 @@ services:
       - LND_REST_PORT=8080
       - LND_MACAROON_PATH=/lnd-certs/data/chain/bitcoin/regtest/admin.macaroon
       - LND_TLS_CERT_PATH=/lnd-certs/tls.cert
+      # JWT config
+      - JWT_PRIVATE_KEY_PATH=/app/keys/private.pem
+      - JWT_PUBLIC_KEY_PATH=/app/keys/public.pem
+      - JWT_EXPIRES_IN=24h
     volumes:
       - ./lnurl-server/data:/data
+      - ./lnurl-server/keys:/app/keys:ro
       - ./lnd:/lnd-certs:ro
     ports:
       - "3000:3000"

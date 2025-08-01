@@ -74,11 +74,12 @@ class Validation {
         return crypto.randomBytes(config.limits.idLength).toString('hex');
     }
 
-    /**
-     * Validate public key format
-     * @param {string} pubkey - The public key (hex string)
-     * @returns {boolean} - True if valid public key format
-     */
+    static calculateSessionExpiry() {
+        const expiresAt = new Date();
+        expiresAt.setSeconds(expiresAt.getSeconds() + config.limits.sessionTimeout);
+        return expiresAt;
+    }
+
     static isValidPublicKey(pubkey) {
         try {
             if (!pubkey || typeof pubkey !== 'string') {
@@ -97,137 +98,73 @@ class Validation {
         }
     }
 
-    /**
-     * Validate signature format
-     * @param {string} signature - The signature (DER-hex-encoded or compact hex string)
-     * @returns {boolean} - True if valid signature format
-     */
     static isValidSignature(signature) {
         try {
-            console.log('🔍 Validating signature format:', signature?.substring(0, 20) + '...', 'length:', signature?.length);
-            
             if (!signature || typeof signature !== 'string') {
-                console.log('❌ Signature is null/undefined or not string');
                 return false;
             }
 
             // Check if it's a valid hex string
             if (!/^[a-fA-F0-9]+$/.test(signature)) {
-                console.log('❌ Signature is not valid hex');
                 return false;
             }
 
             const sigBuffer = Buffer.from(signature, 'hex');
-            console.log('📏 Signature buffer length:', sigBuffer.length, 'bytes');
             
             // Try to parse as DER-encoded signature
             try {
                 secp256k1.signatureImport(sigBuffer);
-                console.log('✅ Valid DER signature');
                 return true; // Valid DER signature
             } catch (derError) {
-                console.log('❌ DER parsing failed:', derError.message);
                 // If DER parsing fails, check if it's compact format (64 bytes = 128 hex chars)
                 if (sigBuffer.length === 64) {
-                    console.log('✅ Valid compact signature');
                     return true; // Valid compact signature
                 }
-                console.log('❌ Invalid format - not DER and not compact, length:', sigBuffer.length);
                 return false; // Invalid format
             }
         } catch (error) {
-            console.log('❌ Exception in signature validation:', error);
             return false;
         }
     }
 
-    /**
-     * Verify LNURL Auth signature
-     * @param {string} k1 - The challenge parameter (hex string)
-     * @param {string} sig - The signature (DER-hex-encoded)
-     * @param {string} key - The public key (hex string)
-     * @returns {boolean} - True if signature is valid
-     */
     static verifyLnurlAuthSignature(k1, sig, key) {
-        try {
-            console.log('🔍 Verifying LNURL Auth signature:');
-            console.log('  K1:', k1);
-            console.log('  Sig:', sig, 'length:', sig.length);
-            console.log('  Key:', key);
-            
+        try {           
             // Convert hex strings to buffers
             const k1Buffer = Buffer.from(k1, 'hex');
             const sigBuffer = Buffer.from(sig, 'hex');
             const keyBuffer = Buffer.from(key, 'hex');
 
-            console.log('  Buffer lengths - k1:', k1Buffer.length, 'sig:', sigBuffer.length, 'key:', keyBuffer.length);
-
             // Verify the public key is valid
             if (!secp256k1.publicKeyVerify(keyBuffer)) {
-                console.log('❌ Invalid public key');
                 return false;
             }
-            console.log('✅ Valid public key');
 
             // Convert DER-encoded signature to compact format for secp256k1 verification
             let compactSig;
             try {
-                console.log('🔄 Attempting DER import...');
                 compactSig = secp256k1.signatureImport(sigBuffer);
-                console.log('✅ Successfully imported DER signature, compact length:', compactSig.length);
             } catch (derError) {
-                console.log('❌ DER import failed:', derError.message);
                 // If DER parsing fails, try as compact signature (backwards compatibility)
                 if (sigBuffer.length === 64) {
-                    console.log('🔄 Trying as compact signature...');
                     compactSig = sigBuffer;
                 } else {
-                    console.error('❌ Invalid signature format - not DER and not compact, length:', sigBuffer.length);
                     return false;
                 }
             }
 
             // Verify the signature
-            console.log('🔄 Verifying signature...');
             const isValid = secp256k1.ecdsaVerify(compactSig, k1Buffer, keyBuffer);
-            console.log('✅ Signature verification result:', isValid);
             return isValid;
         } catch (error) {
-            console.error('❌ Error verifying LNURL Auth signature:', error);
             return false;
         }
     }
 
-    // Validate LNURL Auth request params according to LUD-04
-    static validateAuthRequest(params) {
-        const errors = [];
-
-        if (!this.isValidK1(params.k1)) {
-            errors.push('Invalid k1 parameter - must be 32-byte hex string');
-        }
+    static isValidAuthAction(action) {
+        if (!action) return true; // valid (no action provided)
         
-        // sig: required, DER-hex-encoded ECDSA signature
-        if (!this.isValidSignature(params.sig)) {
-            console.log('❌ Signature validation failed for:', params.sig, 'length:', params.sig?.length);
-            errors.push('Invalid sig parameter - must be DER-hex-encoded ECDSA signature');
-        } else {
-            console.log('✅ Signature validation passed for:', params.sig?.substring(0, 20) + '...');
-        }
-        
-        // key: required, compressed 33-byte secp256k1 public key
-        if (!this.isValidPublicKey(params.key)) {
-            errors.push('Invalid key parameter - must be compressed 33-byte secp256k1 public key');
-        }
-
-        // action: optional, but if present must be valid enum
-        if (params.action) {
-            const validActions = ['register', 'login', 'link', 'auth'];
-            if (!validActions.includes(params.action)) {
-                errors.push(`Invalid action parameter - must be one of: ${validActions.join(', ')}`);
-            }
-        }
-
-        return errors;
+        const validActions = ['register', 'login', 'link', 'auth'];
+        return validActions.includes(action);
     }
 
     // Validate LNURL channel request parameters

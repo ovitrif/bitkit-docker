@@ -46,12 +46,17 @@ A complete Docker-based development environment for Bitcoin and Lightning Networ
 - **Features**: 
   - LNURL-withdraw
   - LNURL-pay
+  - LNURL-auth + RS256 JWT for VSS
   - Lightning Address support
   - QR code generation
 - **Endpoints**:
   - `/health` - Service health check
+  - `/generate` - Generate UI for LNURL
   - `/generate/withdraw` - Generate LNURL-withdraw
   - `/generate/pay` - Generate LNURL-pay
+  - `/generate/channel` - Generate LNURL-channel
+  - `/generate/auth` - Generate LNURL-auth
+  - `/auth` - LNURL-auth endpoint
   - `/.well-known/lnurlp/:username` - Lightning Address
 
 ### Electrum Server
@@ -79,6 +84,11 @@ curl http://localhost:3000/health | jq
 ### Lightning Address
 ```bash
 curl http://localhost:3000/.well-known/lnurlp/alice
+```
+
+### LNURL-Auth
+```bash
+curl http://localhost:3000/auth
 ```
 
 ## Development
@@ -173,6 +183,7 @@ Key environment variables in `docker-compose.yml`:
 ### Volumes
 - `./lnd:/lnd-certs:ro` - LND certificates and macaroons
 - `./lnurl-server/data:/data` - LNURL server database
+- `./lnurl-server/keys:/app/keys:ro` - RSA keys for JWT signing
 - `bitcoin_home` - Bitcoin blockchain data
 
 ## Troubleshooting
@@ -195,6 +206,7 @@ Key environment variables in `docker-compose.yml`:
 ### Nuke databases
 1. Run `docker compose down --volumes`
 2. Delete databases: `rm -rf ./lnd ./lnurl-server/data`
+3. Delete RSA keys: `rm -rf ./lnurl-server/keys ./public.pem`
 
 ### LNURL issues
 1. Check latest logs snapshot: `docker logs lnurl-server --tail 10`

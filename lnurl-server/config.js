@@ -39,6 +39,15 @@ const config = {
         sessionTimeout: 600, // 10 minutes in seconds
     },
 
+    // JWT configuration
+    jwt: {
+        privateKeyPath: process.env.JWT_PRIVATE_KEY_PATH || '/app/keys/private.pem',
+        publicKeyPath: process.env.JWT_PUBLIC_KEY_PATH || '/app/keys/public.pem',
+        expiresIn: process.env.JWT_EXPIRES_IN || '24h', // Token validity period
+        algorithm: 'RS256'
+    },
+
+
     // Background job intervals
     intervals: {
         paymentCheck: 10000, // 10 seconds

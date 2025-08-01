@@ -1,5 +1,8 @@
 lnd/
 lnurl-server/data/
 node_modules/
+target/
+vss-server/
+.idea/
 
 .DS_Store

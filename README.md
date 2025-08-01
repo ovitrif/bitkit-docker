@@ -9,6 +9,7 @@ A complete Docker-based development environment for Bitcoin and Lightning Networ
 - **Electrum Server**: For Bitcoin blockchain queries
 - **LNURL Server**: Lightning payment server with LNURL support
 - **LDK Backup Server**: Lightning Development Kit backup service
+- **VSS Server**: Versioned Storage Server for app and ldk-node state backups
 
 ## Quick Start
 
@@ -59,6 +60,10 @@ A complete Docker-based development environment for Bitcoin and Lightning Networ
   - `/auth` - LNURL-auth endpoint
   - `/.well-known/lnurlp/:username` - Lightning Address
 
+### VSS Server
+- **Port**: 5050
+- **Features**: RS256 JWT authentication
+
 ### Electrum Server
 - **Port**: 60001
 - **Network**: Regtest
@@ -91,6 +96,11 @@ curl http://localhost:3000/.well-known/lnurlp/alice
 curl http://localhost:3000/auth
 ```
 
+### VSS Health Check
+```bash
+curl -v http://localhost:5050/vss/getObject
+```
+
 ## Development
 
 ### Adding Blocks (for testing)
@@ -110,6 +120,7 @@ docker-compose logs -f
 
 # Specific service
 docker-compose logs -f lnurl-server
+docker-compose logs -f vss-server
 docker-compose logs -f lnd
 docker-compose logs -f bitcoind
 ```
@@ -170,6 +181,19 @@ docker-compose logs -f bitcoind
 - generate LNURL auth: `http://localhost:3000/generate/auth`
 - paste lnurl into app and complete the flow
 
+#### LDK-NODE with JWT auth to VSS
+- `adb reverse tcp:3000 tcp:3000`
+- `adb reverse tcp:5050 tcp:5050`
+- checkout latest [bitkit-docker](https://github.com/ovitrif/bitkit-docker)
+  - cd to its root dir
+  - `git clone git@github.com:ovitrif/vss-server.git vss-server`
+  - `docker compose up --build`
+- in `Env.kt` use commented REGTEST urls for `lnurlAuthSeverUrl` and `vssServerUrl`
+- uninstall & reinstall new app
+- create new wallet
+- send onchain from other wallet to have activity
+- backup seed, then wipe and restore
+
 ## Configuration
 
 ### Environment Variables
@@ -185,6 +209,41 @@ Key environment variables in `docker-compose.yml`:
 - `./lnurl-server/data:/data` - LNURL server database
 - `./lnurl-server/keys:/app/keys:ro` - RSA keys for JWT signing
 - `bitcoin_home` - Bitcoin blockchain data
+- `postgres_data` - VSS PostgreSQL database
+
+### VSS Server Setup
+
+**RSA Key Generation:**
+```bash
+# Generate RSA keys for JWT
+openssl genrsa -out private.pem 2048
+openssl rsa -in private.pem -pubout -out public.pem
+
+# Copy keys for services
+mv private.pem public.pem lnurl-server/keys/
+
+# Update VSS_JWT_PUBLIC_KEY env variable in docker-compose.yml
+```
+
+**Database Setup:**
+- PostgreSQL container with `postgres` database
+- Table schemas: `https://github.com/lightningdevkit/vss-server/tree/main/rust/impls/src/postgres/sql`
+- Auto-mounted from `sql/v0_create_vss_db.sql`
+
+**Docker Setup:**
+```bash
+# Clean slate
+docker-compose down --volumes
+rm -rf lnurl-server/keys/ private.pem public.pem
+
+# Generate new RSA keys (see above)
+
+# Clone vss-server into root dir
+git clone git@github.com:ovitrif/vss-server.git vss-server
+
+# Start services
+docker-compose up --build -d
+```
 
 ## Troubleshooting
 

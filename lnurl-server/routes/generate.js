@@ -7,7 +7,6 @@ const config = require('../config');
 const db = require('../database');
 const Validation = require('../utils/validation');
 const Logger = require('../utils/logger');
-const JWTUtils = require('../utils/jwt');
 const { asyncHandler, ValidationError } = require('../middleware/errorHandler');
 
 // Generate index HTML page

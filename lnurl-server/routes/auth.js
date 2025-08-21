@@ -6,7 +6,6 @@ const config = require('../config');
 const db = require('../database');
 const Validation = require('../utils/validation');
 const Logger = require('../utils/logger');
-const JWTUtils = require('../utils/jwt');
 const { asyncHandler, ValidationError } = require('../middleware/errorHandler');
 
 // LNURL-auth endpoint
@@ -65,21 +64,10 @@ async function handleSignedRequest(req, res) {
 
     await db.authenticateSession(k1, key);
 
-    // Generate JWT token
-    try {
-        const jwtToken = JWTUtils.generateToken(key, {});
-
-        res.json({ 
-            status: 'OK',
-            token: jwtToken
-        });
-    } catch (error) {
-        Logger.error('Failed to generate auth token:', error);
-        return res.status(400).json({
-            status: 'ERROR',
-            reason: 'Failed to generate auth token'
-        });
-    }
+    // Return success without JWT token
+    res.json({ 
+        status: 'OK'
+    });
 }
 
 async function handleEmptyRequest(req, res) {
@@ -106,4 +94,4 @@ async function handleEmptyRequest(req, res) {
     res.type('text/plain').send(authUrl);
 }
 
-module.exports = router; 
+module.exports = router;

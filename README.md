@@ -47,7 +47,8 @@ A complete Docker-based development environment for Bitcoin and Lightning Networ
 - **Features**: 
   - LNURL-withdraw
   - LNURL-pay
-  - LNURL-auth + RS256 JWT for VSS
+  - LNURL-auth
+  - LNURL-channel
   - Lightning Address support
   - QR code generation
 - **Endpoints**:
@@ -57,12 +58,18 @@ A complete Docker-based development environment for Bitcoin and Lightning Networ
   - `/generate/pay` - Generate LNURL-pay
   - `/generate/channel` - Generate LNURL-channel
   - `/generate/auth` - Generate LNURL-auth
-  - `/auth` - LNURL-auth endpoint
   - `/.well-known/lnurlp/:username` - Lightning Address
 
 ### VSS Server
 - **Port**: 5050
 - **Features**: RS256 JWT authentication
+
+### LNURL-Auth Server
+- **Port**: 5005
+- **Features**: Issuing RS256 JWT via LNURL-Auth protocol expected by VSS
+- **Endpoints**:
+  - `/health` - Service health check
+  - `/auth` - LNURL-auth endpoint
 
 ### Electrum Server
 - **Port**: 60001
@@ -89,11 +96,6 @@ curl http://localhost:3000/health | jq
 ### Lightning Address
 ```bash
 curl http://localhost:3000/.well-known/lnurlp/alice
-```
-
-### LNURL-Auth
-```bash
-curl http://localhost:3000/auth
 ```
 
 ### VSS Health Check

@@ -16,7 +16,7 @@ A complete Docker-based development environment for Bitcoin and Lightning Networ
 1. **Clone and start the services:**
 
    ```bash
-   git clone <repository-url>
+   git clone --recurse-submodules git@github.com:ovitrif/bitkit-docker.git
    cd bitkit-docker
    docker-compose up -d
    ```
@@ -196,7 +196,7 @@ docker-compose logs -f bitcoind
 - `adb reverse tcp:5050 tcp:5050`
 - checkout latest [bitkit-docker](https://github.com/ovitrif/bitkit-docker)
   - cd to its root dir
-  - `git clone git@github.com:ovitrif/vss-server.git vss-server`
+  - `git submodule update --init --recursive`
   - `docker compose up --build`
 - in `Env.kt` use commented REGTEST urls for `lnurlAuthSeverUrl` and `vssServerUrl`
 - uninstall & reinstall new app
@@ -275,8 +275,8 @@ rm -rf ./data ./test-data
 # rm -rf lnurl-server/keys/ private.pem public.pem
 # Then Generate new RSA keys (see above)
 
-# Clone vss-server into root dir:
-git clone git@github.com:ovitrif/vss-server.git vss-server
+# Initialize vss-server submodule:
+git submodule update --init --recursive
 
 # Start services
 docker-compose up --build -d

@@ -1,0 +1,3 @@
+[submodule "vss-server"]
+	path = vss-server
+	url = git@github.com:ovitrif/vss-server.git

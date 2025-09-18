@@ -16,6 +16,7 @@ const adminRoutes = require('./routes/admin');
 const generateRoutes = require('./routes/generate');
 const wellKnownRoutes = require('./routes/well-known');
 const authRoutes = require('./routes/auth');
+const decoderRoutes = require('./routes/decoder');
 
 // Create Express app
 const app = express();
@@ -33,6 +34,7 @@ app.use('/', adminRoutes); // Health check and monitoring endpoints
 app.use('/auth', authRoutes);
 app.use('/', wellKnownRoutes);
 app.use('/generate', generateRoutes);
+app.use('/decode', decoderRoutes);
 
 // Error handling middleware (must be last)
 app.use(errorHandler);

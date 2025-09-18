@@ -257,6 +257,17 @@ const getStyles = () => `
         background: var(--geist-foreground);
         color: var(--geist-background);
         border-color: var(--geist-foreground);
+        transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+        background: var(--accents-7);
+        border-color: var(--accents-7);
+    }
+
+    .btn-primary:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px var(--accents-2);
     }
 
 
@@ -490,6 +501,18 @@ const renderRootPage = ({ health, domain }) => {
                     ]
                 })}
 
+                ${card({
+                    icon: 'code',
+                    title: 'Decode',
+                    endpoints: [
+                        {
+                            method: 'GET',
+                            path: '/decode',
+                            description: 'Interactive decoder UI',
+                            clickable: true
+                        }
+                    ]
+                })}
 
                 ${card({
                     icon: 'chart-bar',
@@ -662,8 +685,382 @@ const renderQrPage = ({ type, qrCode, url }) => {
     });
 };
 
+const renderDecoderPage = () => {
+    const content = container({
+        content: `
+            ${header({
+                title: 'Lightning & LNURL Decode'
+            })}
+
+            <div class="decode-container">
+                <div class="tab-container">
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="lightning">Lightning Invoice</button>
+                        <button class="tab-btn" data-tab="lnurl-decode">LNURL Decode</button>
+                        <button class="tab-btn" data-tab="lnurl-encode">LNURL Encode</button>
+                    </div>
+
+                    <div id="lightning" class="tab-content active">
+                        <div class="input-section">
+                            <label for="lightning-input">Lightning Invoice (BOLT11)</label>
+                            <textarea
+                                id="lightning-input"
+                                class="decode-input"
+                                placeholder="lnbc1..."
+                                rows="3"
+                            ></textarea>
+                            <button onclick="decodeLightning()" class="btn btn-primary">Decode Invoice</button>
+                        </div>
+                        <div class="output-section">
+                            <div class="output-header">
+                                <label>Decoded Output</label>
+                                <button onclick="copyOutput('lightning-output')" class="btn-copy">Copy</button>
+                            </div>
+                            <pre id="lightning-output" class="decode-output">Enter a Lightning invoice above to decode it</pre>
+                        </div>
+                    </div>
+
+                    <div id="lnurl-decode" class="tab-content">
+                        <div class="input-section">
+                            <label for="lnurl-decode-input">LNURL String</label>
+                            <textarea
+                                id="lnurl-decode-input"
+                                class="decode-input"
+                                placeholder="lnurl1..."
+                                rows="3"
+                            ></textarea>
+                            <button onclick="decodeLnurl()" class="btn btn-primary">Decode LNURL</button>
+                        </div>
+                        <div class="output-section">
+                            <div class="output-header">
+                                <label>Decoded Output</label>
+                                <button onclick="copyOutput('lnurl-decode-output')" class="btn-copy">Copy</button>
+                            </div>
+                            <pre id="lnurl-decode-output" class="decode-output">Enter an LNURL string above to decode it</pre>
+                        </div>
+                    </div>
+
+                    <div id="lnurl-encode" class="tab-content">
+                        <div class="input-section">
+                            <label for="lnurl-encode-input">URL to Encode</label>
+                            <textarea
+                                id="lnurl-encode-input"
+                                class="decode-input"
+                                placeholder="https://..."
+                                rows="3"
+                            ></textarea>
+                            <button onclick="encodeLnurl()" class="btn btn-primary">Encode to LNURL</button>
+                        </div>
+                        <div class="output-section">
+                            <div class="output-header">
+                                <label>Encoded Output</label>
+                                <button onclick="copyOutput('lnurl-encode-output')" class="btn-copy">Copy</button>
+                            </div>
+                            <pre id="lnurl-encode-output" class="decode-output">Enter a URL above to encode it as LNURL</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <style>
+                .decode-container {
+                    margin-top: var(--gap-double);
+                }
+
+                .tab-container {
+                    background: var(--geist-background);
+                    border: 1px solid var(--accents-2);
+                    border-radius: var(--radius-large);
+                    overflow: hidden;
+                }
+
+                .tabs {
+                    display: flex;
+                    background: var(--accents-1);
+                }
+
+                .tab-btn {
+                    flex: 1;
+                    padding: var(--gap);
+                    background: none;
+                    border: none;
+                    font-family: var(--font-sans);
+                    font-size: 0.875rem;
+                    font-weight: 500;
+                    color: var(--accents-5);
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+
+                .tab-btn:hover {
+                    background: var(--accents-2);
+                    color: var(--geist-foreground);
+                }
+
+                .tab-btn.active {
+                    background: var(--geist-background);
+                    color: var(--geist-foreground);
+                    border-bottom: none;
+                    margin-bottom: 0;
+                }
+
+                .tab-btn:focus {
+                    outline: none;
+                }
+
+                .tab-content {
+                    display: none;
+                    padding: var(--gap-double);
+                }
+
+                .tab-content.active {
+                    display: block;
+                }
+
+                .input-section {
+                    margin-bottom: var(--gap-double);
+                }
+
+                .input-section label {
+                    display: block;
+                    font-weight: 500;
+                    margin-bottom: var(--gap-half);
+                    color: var(--geist-foreground);
+                }
+
+                .decode-input {
+                    width: 100%;
+                    padding: var(--gap);
+                    border: 1px solid var(--accents-4);
+                    border-radius: var(--radius);
+                    font-family: var(--font-mono);
+                    font-size: 0.875rem;
+                    background: var(--geist-background);
+                    color: var(--geist-foreground);
+                    resize: vertical;
+                    min-height: 80px;
+                    margin-bottom: var(--gap);
+                }
+
+                .decode-input:focus {
+                    outline: none;
+                    border-color: var(--geist-foreground);
+                }
+
+                .output-section {
+                    margin-top: var(--gap-double);
+                }
+
+                .output-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: var(--gap-half);
+                }
+
+                .output-header label {
+                    font-weight: 500;
+                    color: var(--geist-foreground);
+                }
+
+                .btn-copy {
+                    padding: var(--gap-quarter) var(--gap-half);
+                    background: var(--accents-1);
+                    border: 1px solid var(--accents-2);
+                    border-radius: var(--radius-small);
+                    font-size: 0.75rem;
+                    color: var(--accents-5);
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                }
+
+                .btn-copy:hover {
+                    background: var(--accents-2);
+                    color: var(--geist-foreground);
+                }
+                .btn-copy:focus {
+                    outline: none;
+                }
+
+                .decode-output {
+                    width: 100%;
+                    min-height: 200px;
+                    padding: var(--gap);
+                    background: var(--accents-1);
+                    border: 1px solid var(--accents-2);
+                    border-radius: var(--radius);
+                    font-family: var(--font-mono);
+                    font-size: 0.875rem;
+                    color: var(--geist-foreground);
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                    overflow-x: auto;
+                }
+
+                .error {
+                    color: var(--geist-error);
+                }
+
+                .success {
+                    color: var(--geist-success);
+                }
+            </style>
+
+            <script>
+                // Tab switching functionality
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        // Remove active class from all tabs and content
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                        // Add active class to clicked tab
+                        this.classList.add('active');
+
+                        // Show corresponding content
+                        const tabId = this.getAttribute('data-tab');
+                        document.getElementById(tabId).classList.add('active');
+                    });
+                });
+
+                // Decode Lightning invoice
+                async function decodeLightning() {
+                    const input = document.getElementById('lightning-input').value.trim();
+                    const output = document.getElementById('lightning-output');
+
+                    if (!input) {
+                        output.textContent = 'Please enter a Lightning invoice';
+                        output.className = 'decode-output error';
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/decode/lightning', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ invoice: input })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            output.textContent = JSON.stringify(result.decoded, null, 2);
+                            output.className = 'decode-output success';
+                        } else {
+                            output.textContent = 'Error: ' + result.error;
+                            output.className = 'decode-output error';
+                        }
+                    } catch (error) {
+                        output.textContent = 'Network error: ' + error.message;
+                        output.className = 'decode-output error';
+                    }
+                }
+
+                // Decode LNURL
+                async function decodeLnurl() {
+                    const input = document.getElementById('lnurl-decode-input').value.trim();
+                    const output = document.getElementById('lnurl-decode-output');
+
+                    if (!input) {
+                        output.textContent = 'Please enter an LNURL string';
+                        output.className = 'decode-output error';
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/decode/lnurl/decode', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ lnurlString: input })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            output.textContent = result.decoded;
+                            output.className = 'decode-output success';
+                        } else {
+                            output.textContent = 'Error: ' + result.error;
+                            output.className = 'decode-output error';
+                        }
+                    } catch (error) {
+                        output.textContent = 'Network error: ' + error.message;
+                        output.className = 'decode-output error';
+                    }
+                }
+
+                // Encode URL to LNURL
+                async function encodeLnurl() {
+                    const input = document.getElementById('lnurl-encode-input').value.trim();
+                    const output = document.getElementById('lnurl-encode-output');
+
+                    if (!input) {
+                        output.textContent = 'Please enter a URL to encode';
+                        output.className = 'decode-output error';
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch('/decode/lnurl/encode', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ url: input })
+                        });
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            output.textContent = JSON.stringify(result.encoded, null, 2);
+                            output.className = 'decode-output success';
+                        } else {
+                            output.textContent = 'Error: ' + result.error;
+                            output.className = 'decode-output error';
+                        }
+                    } catch (error) {
+                        output.textContent = 'Network error: ' + error.message;
+                        output.className = 'decode-output error';
+                    }
+                }
+
+                // Copy output to clipboard
+                async function copyOutput(elementId) {
+                    const element = document.getElementById(elementId);
+                    try {
+                        await navigator.clipboard.writeText(element.textContent);
+
+                        // Show feedback
+                        const btn = event.target;
+                        const originalText = btn.textContent;
+                        btn.textContent = 'Copied!';
+                        btn.style.color = 'var(--geist-success)';
+
+                        setTimeout(() => {
+                            btn.textContent = originalText;
+                            btn.style.color = '';
+                        }, 2000);
+                    } catch (error) {
+                        console.error('Failed to copy:', error);
+                    }
+                }
+            </script>
+        `
+    });
+
+    return mainLayout({
+        title: 'Lightning & LNURL Decode - Bitkit LNURL Dev Server',
+        content
+    });
+};
+
 module.exports = {
     renderRootPage,
     renderGeneratorPage,
-    renderQrPage
+    renderQrPage,
+    renderDecoderPage
 };

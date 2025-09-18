@@ -137,11 +137,7 @@ docker-compose logs -f bitcoind
 #### Bech32 LNURL Pay
 
 - checkout this repo locally
-- in `Env.kt`, change `ElectrumServers.REGTEST` to
-  ```kt
-  host = "__YOUR_NETWORK_IP__",
-  tcp = 60001,
-  ```
+- in `Env.kt`, change `ElectrumServers.REGTEST` to `"tcp://__YOUR_NETWORK_IP__:60001"`
 - uninstall old app and install fresh one
 - set DOMAIN in `docker-compose.yml` to `http://__YOUR_NETWORK_IP__:3000`
 - run `docker compose up --build`
@@ -211,11 +207,7 @@ docker-compose logs -f bitcoind
 #### External Node manual setup
 
 - use physical phone so localhost is usable via adb reverse
-- in `Env.kt`, change `ElectrumServers.REGTEST` to
-  ```kt
-  host = "127.0.0.1",
-  tcp = 60001,
-  ```
+- in `Env.kt`, change `ElectrumServers.REGTEST` to `"tcp://127.0.0.1:60001"`
 - `adb reverse tcp:60001 tcp:60001`
 - `adb reverse tcp:9735 tcp:9735`
 - mine 101 blocks: `./bitcoin-cli fund`

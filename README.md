@@ -18,7 +18,7 @@ A complete Docker-based development environment for Bitcoin and Lightning Networ
    ```bash
    git clone --recurse-submodules git@github.com:ovitrif/bitkit-docker.git
    cd bitkit-docker
-   docker-compose up -d
+   docker compose up -d
    ```
 
 2. **Wait for services to initialize** (about 30-60 seconds)
@@ -116,20 +116,20 @@ curl -v http://localhost:5050/vss/getObject
 ### LND CLI
 
 ```bash
-docker-compose exec lnd lncli --network=regtest getinfo
+docker compose exec lnd lncli --network=regtest getinfo
 ```
 
 ### View Logs
 
 ```bash
 # All services
-docker-compose logs -f
+docker compose logs -f
 
 # Specific service
-docker-compose logs -f lnurl-server
-docker-compose logs -f vss-server
-docker-compose logs -f lnd
-docker-compose logs -f bitcoind
+docker compose logs -f lnurl-server
+docker compose logs -f vss-server
+docker compose logs -f lnd
+docker compose logs -f bitcoind
 ```
 
 ### Bitkit Testing
@@ -139,7 +139,7 @@ docker-compose logs -f bitcoind
 - checkout this repo locally
 - in `Env.kt`, change `ElectrumServers.REGTEST` to `"tcp://__YOUR_NETWORK_IP__:60001"`
 - uninstall old app and install fresh one
-- set DOMAIN in `docker-compose.yml` to `http://__YOUR_NETWORK_IP__:3000`
+- set DOMAIN in `docker compose.yml` to `http://__YOUR_NETWORK_IP__:3000`
 - run `docker compose up --build`
 - mine blocks: `./bitcoin-cli mine 101`
 - fund onchain wallet: `./bitcoin-cli fund`
@@ -156,7 +156,7 @@ docker-compose logs -f bitcoind
 #### Lightning Address
 
 - `ngrok http 3000`
-- change `DOMAIN` in `docker-compose.yml` to `__NGROK_URL__`
+- change `DOMAIN` in `docker compose.yml` to `__NGROK_URL__`
 - `docker compose down` if running
 - `docker compose up --build`
 - `http://localhost:3000/.well-known/lnurlp/alice`
@@ -164,9 +164,9 @@ docker-compose logs -f bitcoind
 
 #### LNURL-Channel
 
-- use physical phone so localhost is usable via adb reverse
+- (optional) use physical phone so localhost is usable via adb reverse
 - reset `bitkit-docker state` (optional)
-  - `docker compose down --volumes`
+  - `docker compose down --v`
   - `rm -rf ./lnd ./lnurl-server/data`
   - `docker compose up --build`
 - `adb reverse tcp:60001 tcp:60001`
@@ -184,7 +184,7 @@ docker-compose logs -f bitcoind
 #### LNURL-Auth
 
 - checkout [bitkit-docker](https://github.com/ovitrif/bitkit-docker) repo
-- set DOMAIN in `docker-compose.yml` to `http://__YOUR_NETWORK_IP__:3000`
+- set DOMAIN in `docker compose.yml` to `http://__YOUR_NETWORK_IP__:3000`
 - run `docker compose down`
 - run `docker compose up --build`
 - generate LNURL auth: `http://localhost:3000/generate/auth`
@@ -226,7 +226,7 @@ docker-compose logs -f bitcoind
 
 ### Environment Variables
 
-Key environment variables in `docker-compose.yml`:
+Key environment variables in `docker compose.yml`:
 
 - `BITCOIN_RPC_HOST`: Bitcoin RPC host (default: `bitcoind`)
 - `BITCOIN_RPC_PORT`: Bitcoin RPC port (default: `43782`)
@@ -253,7 +253,7 @@ openssl rsa -in private.pem -pubout -out public.pem
 # Copy keys for services
 mv private.pem public.pem lnurl-server/keys/
 
-# Update VSS_JWT_PUBLIC_KEY env variable in docker-compose.yml
+# Update VSS_JWT_PUBLIC_KEY env variable in docker compose.yml
 ```
 
 **Database Setup:**
@@ -266,7 +266,7 @@ mv private.pem public.pem lnurl-server/keys/
 
 ```bash
 # Clean slate
-docker-compose down --volumes
+docker compose down --v
 rm -rf ./lnd ./lnurl-server/data
 # run in lnurl-auth-server root dir:
 rm -rf ./data ./test-data
@@ -279,7 +279,7 @@ rm -rf ./data ./test-data
 git submodule update --init --recursive
 
 # Start services
-docker-compose up --build -d
+docker compose up --build -d
 ```
 
 ## Troubleshooting
@@ -288,7 +288,7 @@ docker-compose up --build -d
 
 1. Check if ports are available
 2. Ensure Docker has enough resources
-3. Check logs: `docker-compose logs`
+3. Check logs: `docker compose logs`
 
 ### LNURL server not connecting to LND
 
@@ -304,7 +304,7 @@ docker-compose up --build -d
 
 ### Nuke databases
 
-1. Run `docker compose down --volumes`
+1. Run `docker compose down --v`
 2. Delete databases: `rm -rf ./lnd ./lnurl-server/data`
 3. Delete RSA keys: `rm -rf ./lnurl-server/keys ./public.pem`
 4. Delete lnurl-auth-server db: cd to its root dir then run `rm -rf ./data ./test-data`
@@ -312,7 +312,7 @@ docker-compose up --build -d
 ### LNURL issues
 
 1. Check latest logs snapshot: `docker logs lnurl-server --tail 10`
-2. Check live logs: `docker-compose logs -f lnurl-server`
+2. Check live logs: `docker compose logs -f lnurl-server`
 3. Check LND wallet balance:
 
 ```sh

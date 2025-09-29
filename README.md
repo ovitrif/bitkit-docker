@@ -164,9 +164,9 @@ docker compose logs -f bitcoind
 
 #### LNURL-Channel
 
-- (optional) use physical phone so localhost is usable via adb reverse
-- reset `bitkit-docker state` (optional)
-  - `docker compose down --v`
+- (optional) use physical phone so localhost is usable via `adb reverse`
+- (optional) reset `bitkit-docker state`
+  - `docker compose down -v`
   - `rm -rf ./lnd ./lnurl-server/data`
   - `docker compose up --build`
 - `adb reverse tcp:60001 tcp:60001`
@@ -204,21 +204,27 @@ docker compose logs -f bitcoind
 - send onchain from other wallet to have activity
 - backup seed, then wipe and restore
 
-#### External Node manual setup
+#### External Node Channel
 
-- use physical phone so localhost is usable via adb reverse
+- (optional) use physical phone so localhost is usable via `adb reverse`
+- (optional) reset `bitkit-docker state`
+  - `docker compose down -v`
+  - `rm -rf ./lnd ./lnurl-server/data`
+  - `docker compose up --build`
 - in `Env.kt`, change `ElectrumServers.REGTEST` to `"tcp://127.0.0.1:60001"`
 - `adb reverse tcp:60001 tcp:60001`
 - `adb reverse tcp:9735 tcp:9735`
 - mine 101 blocks: `./bitcoin-cli fund`
+- fund Bitkit wallet: `./bitcoin-cli send 0.05`
+- mine block `./bitcoin-cli mine 1`
 - fund LND wallet:
   - get address: `curl -s http://localhost:3000/address | jq -r .address`
   - fund LND wallet: `./bitcoin-cli send 0.2`
   - mine block `./bitcoin-cli mine 1`
   - check balance: `docker exec lnd lncli --network=regtest --tlscertpath=/home/lnd/.lnd/tls.cert --macaroonpath=/home/lnd/.lnd/data/chain/bitcoin/regtest/admin.macaroon walletbalance`
-- `curl -s http://localhost:3000/health | jq -r '.lnd_info.uris[0]'`
-- paste in bitkit scanner
-- complete fund manual flow
+- `curl -s http://localhost:3000/health | jq -r '.lnd_info.uris[0]'` and copy to clipboard
+- in bitkit: drawer > settings > advanced > lighting conn… > add… > advanced > manual… > paste node uri
+- complete fund manual flow for 50 000 sats
 - mine 6 blocks
 - await channel ready notice
 
@@ -266,7 +272,7 @@ mv private.pem public.pem lnurl-server/keys/
 
 ```bash
 # Clean slate
-docker compose down --v
+docker compose down -v
 rm -rf ./lnd ./lnurl-server/data
 # run in lnurl-auth-server root dir:
 rm -rf ./data ./test-data
@@ -304,7 +310,7 @@ docker compose up --build -d
 
 ### Nuke databases
 
-1. Run `docker compose down --v`
+1. Run `docker compose down -v`
 2. Delete databases: `rm -rf ./lnd ./lnurl-server/data`
 3. Delete RSA keys: `rm -rf ./lnurl-server/keys ./public.pem`
 4. Delete lnurl-auth-server db: cd to its root dir then run `rm -rf ./data ./test-data`

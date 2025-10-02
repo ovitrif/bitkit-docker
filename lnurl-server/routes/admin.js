@@ -152,6 +152,12 @@ router.get('/address', asyncHandler(async (req, res) => {
     res.json(addressInfo);
 }));
 
+// Get LND wallet balance
+router.get('/balance', asyncHandler(async (req, res) => {
+    const balance = await lndService.getWalletBalance();
+    res.json(balance);
+}));
+
 
 // List all auth sessions endpoint
 router.get('/sessions', asyncHandler(async (req, res) => {

@@ -116,7 +116,7 @@ curl -v http://localhost:5050/vss/getObject
 ### LND CLI
 
 ```bash
-docker compose exec lnd lncli --network=regtest getinfo
+docker compose exec lnd lncli --network=regtest --tlscertpath=/home/lnd/.lnd/tls.cert --macaroonpath=/home/lnd/.lnd/data/chain/bitcoin/regtest/admin.macaroon getinfo
 ```
 
 ### View Logs
@@ -176,7 +176,7 @@ docker compose logs -f bitcoind
   - get address: `curl -s http://localhost:3000/address | jq -r .address`
   - fund LND wallet: `./bitcoin-cli send 0.2`
   - mine block `./bitcoin-cli mine 1`
-  - check balance: `docker exec lnd lncli --network=regtest --tlscertpath=/home/lnd/.lnd/tls.cert --macaroonpath=/home/lnd/.lnd/data/chain/bitcoin/regtest/admin.macaroon walletbalance`
+  - check balance: `curl -s http://localhost:3000/balance | jq`
 - generate LNURL channel: `http://localhost:3000/generate/channel`
 - paste lnurl into app and complete the flow
 - mine blocks: `./bitcoin-cli mine 6`
@@ -215,17 +215,16 @@ docker compose logs -f bitcoind
 - `adb reverse tcp:60001 tcp:60001`
 - `adb reverse tcp:9735 tcp:9735`
 - mine 101 blocks: `./bitcoin-cli fund`
-- fund Bitkit wallet: `./bitcoin-cli send 0.05`
+- fund app wallet: `./bitcoin-cli send 0.002`
 - mine block `./bitcoin-cli mine 1`
 - fund LND wallet:
   - get address: `curl -s http://localhost:3000/address | jq -r .address`
   - fund LND wallet: `./bitcoin-cli send 0.2`
   - mine block `./bitcoin-cli mine 1`
-  - check balance: `docker exec lnd lncli --network=regtest --tlscertpath=/home/lnd/.lnd/tls.cert --macaroonpath=/home/lnd/.lnd/data/chain/bitcoin/regtest/admin.macaroon walletbalance`
+  - check balance: `curl -s http://localhost:3000/balance | jq`
 - `curl -s http://localhost:3000/health | jq -r '.lnd_info.uris[0]'` and copy to clipboard
-- in bitkit: drawer > settings > advanced > lighting conn… > add… > advanced > manual… > paste node uri
-- complete fund manual flow for 50 000 sats
-- mine 6 blocks
+- send > paste invoice > complete flow for 100_000 sats & return to home screen
+- mine blocks: `./bitcoin-cli mine 6`
 - await channel ready notice
 
 ## Configuration
@@ -322,7 +321,7 @@ docker compose up --build -d
 3. Check LND wallet balance:
 
 ```sh
-docker exec lnd lncli --network=regtest --tlscertpath=/home/lnd/.lnd/tls.cert --macaroonpath=/home/lnd/.lnd/data/chain/bitcoin/regtest/admin.macaroon walletbalance
+curl -s http://localhost:3000/balance | jq
 ```
 
 ## Security Notes

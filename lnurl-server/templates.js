@@ -497,6 +497,12 @@ const renderRootPage = ({ health, domain }) => {
                             path: '/generate/channel',
                             description: 'Generate LNURL-channel',
                             clickable: true
+                        },
+                        {
+                            method: 'GET',
+                            path: '/generate/bolt11',
+                            description: 'Generate Bolt11 invoice',
+                            clickable: true
                         }
                     ]
                 })}
@@ -554,6 +560,12 @@ const renderRootPage = ({ health, domain }) => {
                             description: 'Get LND funding address',
                             clickable: true
                         },
+                        {
+                            method: 'GET',
+                            path: '/balance',
+                            description: 'Get LND wallet balance',
+                            clickable: true
+                        }
                     ]
                 })}
             </div>
@@ -645,6 +657,31 @@ const renderGeneratorPage = ({}) => {
                             method: 'GET',
                             path: '/generate/channel/qr',
                             description: 'Generate LNURL-channel QR code',
+                            clickable: true
+                        }
+                    ]
+                })}
+
+                ${card({
+                    icon: 'zap',
+                    title: 'Bolt11',
+                    endpoints: [
+                        {
+                            method: 'GET',
+                            path: '/generate/bolt11',
+                            description: 'Generate Bolt11 invoice code',
+                            clickable: true
+                        },
+                        {
+                            method: 'GET',
+                            path: '/generate/bolt11/qr',
+                            description: 'Generate Bolt11 invoice QR code',
+                            clickable: true
+                        },
+                        {
+                            method: 'GET',
+                            path: '/generate/bolt11?amount=2000',
+                            description: 'Generate Bolt11 with custom amount',
                             clickable: true
                         }
                     ]

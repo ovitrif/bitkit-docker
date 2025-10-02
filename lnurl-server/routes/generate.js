@@ -5,6 +5,7 @@ const QRCode = require('qrcode');
 
 const config = require('../config');
 const db = require('../database');
+const lndService = require('../services/lnd');
 const Validation = require('../utils/validation');
 const Logger = require('../utils/logger');
 const { asyncHandler, ValidationError } = require('../middleware/errorHandler');
@@ -49,8 +50,10 @@ const generateLnurl = async (type, query) => {
             return await generateLnurlChannel();
         case 'auth':
             return await generateLnurlAuth(query);
+        case 'bolt11':
+            return await generateBolt11(query);
         default:
-            throw new ValidationError('Invalid type. Use "withdraw", "pay", "channel", or "auth"');
+            throw new ValidationError('Invalid type. Use "withdraw", "pay", "channel", "auth", or "bolt11"');
     }
 };
 
@@ -171,6 +174,40 @@ const generateLnurlAuth = async (query) => {
 
     Logger.info('LNURL-auth generated', { authUrl, k1, sessionId });
     return responseData;
+};
+
+const generateBolt11 = async (query) => {
+    const { amount } = query;
+
+    // Default to 0 (zero-amount invoice) if not specified
+    const amountSats = amount ? parseInt(amount) : 0;
+
+    if (isNaN(amountSats) || amountSats < 0) {
+        throw new ValidationError('Invalid amount. Must be zero or a positive integer.');
+    }
+
+    // Create invoice with LND
+    const invoice = await lndService.createInvoice(amountSats, '', 3600);
+    const paymentRequest = invoice.payment_request;
+
+    const qrCode = await QRCode.toDataURL(paymentRequest, {
+        width: 256,
+        margin: 2,
+        color: {
+            dark: '#000000',
+            light: '#ffffff'
+        }
+    });
+
+    Logger.info('Bolt11 invoice generated', { amount: amountSats, paymentHash: invoice.r_hash });
+
+    return {
+        bolt11: paymentRequest,
+        qrCode,
+        type: 'bolt11',
+        amount: amountSats,
+        paymentHash: invoice.r_hash
+    };
 };
 
 

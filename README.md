@@ -140,7 +140,7 @@ docker compose logs -f bitcoind
 - in `Env.kt`, change `ElectrumServers.REGTEST` to `"tcp://__YOUR_NETWORK_IP__:60001"`
 - uninstall old app and install fresh one
 - set DOMAIN in `docker compose.yml` to `http://__YOUR_NETWORK_IP__:3000`
-- run `docker compose up --build`
+- run `docker compose up --build -d`
 - mine blocks: `./bitcoin-cli mine 101`
 - fund onchain wallet: `./bitcoin-cli fund`
 - mine block: `./bitcoin-cli mine 1`
@@ -158,17 +158,18 @@ docker compose logs -f bitcoind
 - `ngrok http 3000`
 - change `DOMAIN` in `docker compose.yml` to `__NGROK_URL__`
 - `docker compose down` if running
-- `docker compose up --build`
+- `docker compose up --build -d`
 - `http://localhost:3000/.well-known/lnurlp/alice`
 - copy the email-like lightning address and paste into app
 
 #### LNURL-Channel
 
+
 - (optional) use physical phone so localhost is usable via `adb reverse`
 - (optional) reset `bitkit-docker state`
   - `docker compose down -v`
   - `rm -rf ./lnd ./lnurl-server/data`
-  - `docker compose up --build`
+  - `docker compose up --build -d`
 - `adb reverse tcp:60001 tcp:60001`
 - `adb reverse tcp:9735 tcp:9735`
 - mine 101 blocks: `./bitcoin-cli fund`
@@ -186,7 +187,7 @@ docker compose logs -f bitcoind
 - checkout [bitkit-docker](https://github.com/ovitrif/bitkit-docker) repo
 - set DOMAIN in `docker compose.yml` to `http://__YOUR_NETWORK_IP__:3000`
 - run `docker compose down`
-- run `docker compose up --build`
+- run `docker compose up --build -d`
 - generate LNURL auth: `http://localhost:3000/generate/auth`
 - paste lnurl into app and complete the flow
 
@@ -197,7 +198,7 @@ docker compose logs -f bitcoind
 - checkout latest [bitkit-docker](https://github.com/ovitrif/bitkit-docker)
   - cd to its root dir
   - `git submodule update --init --recursive`
-  - `docker compose up --build`
+  - `docker compose up --build -d`
 - in `Env.kt` use commented REGTEST urls for `lnurlAuthSeverUrl` and `vssServerUrl`
 - uninstall & reinstall new app
 - create new wallet
@@ -210,7 +211,7 @@ docker compose logs -f bitcoind
 - (optional) reset `bitkit-docker state`
   - `docker compose down -v`
   - `rm -rf ./lnd ./lnurl-server/data`
-  - `docker compose up --build`
+  - `docker compose up --build -d`
 - in `Env.kt`, change `ElectrumServers.REGTEST` to `"tcp://127.0.0.1:60001"`
 - `adb reverse tcp:60001 tcp:60001`
 - `adb reverse tcp:9735 tcp:9735`
@@ -223,7 +224,7 @@ docker compose logs -f bitcoind
   - mine block `./bitcoin-cli mine 1`
   - check balance: `curl -s http://localhost:3000/balance | jq`
 - `curl -s http://localhost:3000/health | jq -r '.lnd_info.uris[0]'` and copy to clipboard
-- send > paste invoice > complete flow for 100_000 sats & return to home screen
+- send > paste invoice > complete flow for 100_000 sats > return to home screen
 - mine blocks: `./bitcoin-cli mine 6`
 - await channel ready notice
 

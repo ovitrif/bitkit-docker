@@ -36,10 +36,10 @@ router.post('/lightning', asyncHandler(async (req, res) => {
             invoice: invoice,
             decoded: {
                 paymentHash: decoded.paymentHash,
-                description: decoded.description,
-                descriptionHash: decoded.descriptionHash,
+                description: decoded.description || '',
+                descriptionHash: decoded.descriptionHash || null,
                 payeeNodeKey: decoded.payeeNodeKey,
-                purpose: decoded.purpose,
+                purpose: decoded.purpose || null,
                 amount: decoded.millisatoshis ? {
                     millisatoshis: decoded.millisatoshis,
                     satoshis: Math.floor(decoded.millisatoshis / 1000),
@@ -49,11 +49,11 @@ router.post('/lightning', asyncHandler(async (req, res) => {
                 timestampString: decoded.timestampString,
                 expiry: decoded.expiry,
                 expiryString: decoded.timeExpireDate ? (decoded.timeExpireDate instanceof Date ? decoded.timeExpireDate.toISOString() : decoded.timeExpireDate) : null,
-                minFinalCltvExpiry: decoded.minFinalCltvExpiry,
-                fallbackAddresses: decoded.fallbackAddresses,
-                routingInfo: decoded.routingInfo,
-                features: decoded.features,
-                unknownFields: decoded.unknownFields,
+                minFinalCltvExpiry: decoded.minFinalCltvExpiry || null,
+                fallbackAddresses: decoded.fallbackAddresses || [],
+                routingInfo: decoded.routingInfo || [],
+                features: decoded.features || {},
+                unknownFields: decoded.unknownFields || [],
                 signature: decoded.signature,
                 network: decoded.network
             }

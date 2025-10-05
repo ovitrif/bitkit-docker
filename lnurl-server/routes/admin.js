@@ -30,7 +30,7 @@ router.get('/health', asyncHandler(async (req, res) => {
         bitcoin_connected: connections.bitcoin,
         lnd_connected: connections.lnd,
         block_height: connections.blockHeight,
-        lnd_info: connections.nodeInfo,
+        lnd: connections.nodeInfo,
         auth_sessions: sessions,
         domain: config.domain
     });
@@ -196,7 +196,36 @@ async function checkConnections() {
         const nodeInfo = await lndService.getInfo();
         Logger.connection('LND', 'connected', { identity: nodeInfo.identity_pubkey });
         result.lnd = true;
-        result.nodeInfo = nodeInfo;
+
+        // Fetch address and balance info
+        let addressInfo = null;
+        let balanceInfo = null;
+
+        try {
+            const addrResponse = await lndService.getNewAddress();
+            addressInfo = addrResponse.address;
+        } catch (error) {
+            Logger.error('Failed to get LND address', error);
+        }
+
+        try {
+            balanceInfo = await lndService.getWalletBalance();
+        } catch (error) {
+            Logger.error('Failed to get LND balance', error);
+        }
+
+        // Reorder properties: address and balance after uris, chains moved down
+        const { uris, chains, require_htlc_interceptor, store_final_htlc_resolutions, features, ...restNodeInfo } = nodeInfo;
+        result.nodeInfo = {
+            ...restNodeInfo,
+            uris,
+            address: addressInfo,
+            balance: balanceInfo,
+            require_htlc_interceptor,
+            store_final_htlc_resolutions,
+            chains,
+            features
+        };
     } catch (error) {
         Logger.connection('LND', 'failed', { error: error.message });
         if (!result.error) {

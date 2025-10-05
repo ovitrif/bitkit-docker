@@ -146,7 +146,7 @@ docker compose logs -f bitcoind
 - mine block: `./bitcoin-cli mine 1`
 - get local LND nodeID and open channel
   - `http://localhost:3000/health`
-  - `curl -s http://localhost:3000/health | jq -r .lnd_info.uris`
+  - `curl -s http://localhost:3000/health | jq -r .lnd.uris`
   - copy, replace `127.0.0.1` with `__YOUR_NETWORK_IP__` and paste into app, then complete the flow
   - `./bitcoin-cli mine 3`
 - generate LNURL pay: `http://localhost:3000/generate/pay`
@@ -223,7 +223,7 @@ docker compose logs -f bitcoind
   - fund LND wallet: `./bitcoin-cli send 0.2`
   - mine block `./bitcoin-cli mine 1`
   - check balance: `curl -s http://localhost:3000/balance | jq`
-- `curl -s http://localhost:3000/health | jq -r '.lnd_info.uris[0]'` and copy to clipboard
+- `curl -s http://localhost:3000/health | jq -r '.lnd.uris[0]'` and copy to clipboard
 - send > paste invoice > complete flow for 100_000 sats > return to home screen
 - mine blocks: `./bitcoin-cli mine 6`
 - await channel ready notice

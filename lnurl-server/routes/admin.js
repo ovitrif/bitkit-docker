@@ -203,7 +203,7 @@ async function checkConnections() {
 
         try {
             const addrResponse = await lndService.getNewAddress();
-            addressInfo = addrResponse.address;
+            addressInfo = addrResponse?.address || addrResponse;
         } catch (error) {
             Logger.error('Failed to get LND address', error);
         }

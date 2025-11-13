@@ -166,7 +166,7 @@ docker compose logs -f bitcoind
 
 
 - (optional) use physical phone so localhost is usable via `adb reverse`
-- (optional) reset `bitkit-docker state`
+- (optional) reset `bitkit-docker` state
   - `docker compose down -v`
   - `rm -rf ./lnd ./lnurl-server/data`
   - `docker compose up --build -d`
@@ -208,7 +208,7 @@ docker compose logs -f bitcoind
 #### External Node Channel
 
 - (optional) use physical phone so localhost is usable via `adb reverse`
-- (optional) reset `bitkit-docker state`
+- (optional) reset `bitkit-docker` state
   - `docker compose down -v`
   - `rm -rf ./lnd ./lnurl-server/data`
   - `docker compose up --build -d`
@@ -216,13 +216,13 @@ docker compose logs -f bitcoind
 - `adb reverse tcp:60001 tcp:60001`
 - `adb reverse tcp:9735 tcp:9735`
 - mine 101 blocks: `./bitcoin-cli fund`
-- fund app wallet: `./bitcoin-cli send 0.002`
-- mine block `./bitcoin-cli mine 1`
 - fund LND wallet:
   - get address: `curl -s http://localhost:3000/address | jq -r .address`
   - fund LND wallet: `./bitcoin-cli send 0.2`
   - mine block `./bitcoin-cli mine 1`
-  - check balance: `curl -s http://localhost:3000/balance | jq`
+  - check balance: `curl -s http://localhost:3000/health | jq '.lnd.balance'`
+- fund app wallet: `./bitcoin-cli send 0.002`
+- mine block `./bitcoin-cli mine 1`
 - `curl -s http://localhost:3000/health | jq -r '.lnd.uris[0]'` and copy to clipboard
 - send > paste invoice > complete flow for 100_000 sats > return to home screen
 - mine blocks: `./bitcoin-cli mine 6`

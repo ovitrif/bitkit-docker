@@ -1,3 +1,4 @@
 [submodule "vss-server"]
 	path = vss-server
-	url = git@github.com:ovitrif/vss-server.git
+	url = git@github.com:synonymdev/vss-server.git
+	branch = chore/rebase-stag-on-main

@@ -335,3 +335,7 @@ curl -s http://localhost:3000/balance | jq
 ## Production Considerations
 
 Do not use for production. LNURL server is vibe-coded and not fully spec compliant.
+
+## License
+
+This project is released into the public domain under the [Unlicense](LICENSE).

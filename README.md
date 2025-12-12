@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This repository has moved to [synonymdev/bitkit-docker](https://github.com/synonymdev/bitkit-docker).
+
 # Bitkit Docker - Bitcoin & Lightning Development Environment
 
 A complete Docker-based development environment for Bitcoin and Lightning Network development, featuring a LNURL server for Lightning payments.
